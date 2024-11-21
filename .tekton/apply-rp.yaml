@@ -1,0 +1,25 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: apply-rps
+  annotations:
+    tekton.dev/title: "Apply Release Plans to Cluster"
+spec:
+  params:
+    - name: RELEASE_PLAN_PATH
+      description: "Path to the release plan file"
+      type: string
+  stepTemplate:
+    volumeMounts:
+      - mountPath: /var/workdir
+        name: workdir
+  steps:
+    - name: apply-rp
+      image: registry.redhat.io/openshift4/ose-cli@sha256:0f044014ee75aaea8648d464b14b0e35ba32f580e1e718e4fba2af6edaa303b7
+      workingDir: /var/workdir/source
+      script: |
+        #!/usr/bin/env sh
+        oc apply -f $(params.RELEASE_PLAN_PATH)
+  volumes:
+    - name: workdir
+      emptyDir: {}
