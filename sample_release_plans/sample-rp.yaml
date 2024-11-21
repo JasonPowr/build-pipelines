@@ -1,0 +1,19 @@
+apiVersion: appstudio.redhat.com/v1alpha1
+kind: ReleasePlan
+metadata:
+  labels:
+    release.appstudio.openshift.io/auto-release: "false"
+    release.appstudio.openshift.io/releasePlanAdmission: sample
+  name: sample
+  namespace: japower-tenant
+spec:
+  data:
+    releaseNotes:
+      type: "sample"
+      synopsis: "sample"
+      topic: "sample"
+      solution: "sample"
+      references:
+        - "sample"
+  application: sample
+  target: sample

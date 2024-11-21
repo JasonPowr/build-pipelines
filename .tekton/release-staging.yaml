@@ -1,0 +1,19 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: release-staging-pipeline
+  annotations:
+    pipelinesascode.tekton.dev/task: "[.tekton/apply-rp.yaml]"
+spec:   
+  tasks:
+    - name: apply-sample-release-plan
+      taskRef:
+        name: apply-rps
+      params:
+      - name: RELEASE_PLAN_PATH
+        value: $(params.RELEASE_PLAN_PATH)
+  workspaces:
+  - name: git-auth
+    optional: true
+  - name: netrc
+    optional: true
