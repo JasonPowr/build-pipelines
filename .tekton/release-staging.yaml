@@ -4,14 +4,58 @@ metadata:
   name: release-staging-pipeline
   annotations:
     pipelinesascode.tekton.dev/task: "[.tekton/apply-rp.yaml]"
-spec:   
+spec:
   tasks:
-    - name: apply-sample-release-plan
-      taskRef:
-        name: apply-rps
+  - name: init
+    params:
+    - name: image-url
+      value: $(params.output-image)
+    - name: rebuild
+      value: $(params.rebuild)
+    - name: skip-checks
+      value: $(params.skip-checks)
+    taskRef:
       params:
-      - name: RELEASE_PLAN_PATH
-        value: $(params.RELEASE_PLAN_PATH)
+      - name: name
+        value: init
+      - name: bundle
+        value: quay.io/konflux-ci/tekton-catalog/task-init:0.2@sha256:0523b51c28375a3f222da91690e22eff11888ebc98a0c73c468af44762265c69
+      - name: kind
+        value: task
+      resolver: bundles
+  - name: clone-repository
+    params:
+    - name: url
+      value: $(params.git-url)
+    - name: revision
+      value: $(params.revision)
+    runAfter:
+    - init
+    taskRef:
+      params:
+      - name: name
+        value: git-clone
+      - name: bundle
+        value: quay.io/konflux-ci/tekton-catalog/task-git-clone:0.1@sha256:d091a9e19567a4cbdc5acd57903c71ba71dc51d749a4ba7477e689608851e981
+      - name: kind
+        value: task
+      resolver: bundles
+    when:
+    - input: $(tasks.init.results.build)
+      operator: in
+      values:
+      - "true"
+    workspaces:
+    - name: output
+      workspace: workspace
+    - name: basic-auth
+      workspace: git-auth
+  - name: apply-sample-release-plan
+    taskRef:
+      name: apply-rps
+    params:
+    - name: RELEASE_PLAN_PATH
+      value: $(params.RELEASE_PLAN_PATH)
   workspaces:
   - name: git-auth
     optional: true
